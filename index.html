@@ -5,593 +5,91 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>9 Dart Century</title>
   <meta name="description" content="9 Dart Century dart game web app with multiplayer scoring, board selector, undo, and scoreboard." />
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
   <style>
-    :root{
-      --bg:#0f1115;
-      --bg-2:#171a20;
-      --panel:#12151b;
-      --panel-2:rgba(255,255,255,.05);
-      --line:rgba(255,255,255,.1);
-      --text:#f4f0e8;
-      --muted:#a8adb8;
-      --red:#d14b42;
-      --green:#84c07a;
-      --gold:#ddb768;
-      --cream:#f3e7ce;
-      --shadow:0 20px 60px rgba(0,0,0,.35);
-      --radius:22px;
-      --radius-sm:14px;
-      --max:1440px;
-    }
-
+    :root{--bg:#0f1115; --bg-2:#171a20; --panel:#12151b; --panel-2:rgba(255,255,255,.05); --line:rgba(255,255,255,.1); --text:#f4f0e8; --muted:#a8adb8; --red:#d14b42; --green:#84c07a; --gold:#ddb768; --cream:#f3e7ce; --shadow:0 20px 60px rgba(0,0,0,.35); --radius:22px; --radius-sm:14px; --max:1440px; }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
-    body{
-      margin:0;
-      color:var(--text);
-      font-family:"Inter", sans-serif;
-      background:
-        radial-gradient(circle at 15% 20%, rgba(209,75,66,.12), transparent 28%),
-        radial-gradient(circle at 85% 10%, rgba(221,183,104,.10), transparent 26%),
-        linear-gradient(180deg, #17130f 0%, #111318 38%, #0c0e12 100%);
-      min-height:100vh;
-      overflow-x:hidden;
-    }
-
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:
-        linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
-      background-size:28px 28px;
-      mask-image:linear-gradient(to bottom, rgba(0,0,0,.5), transparent 85%);
-      opacity:.32;
-    }
-
-    .app-shell{
-      width:min(var(--max), calc(100% - 32px));
-      margin:24px auto 48px;
-      display:grid;
-      grid-template-columns: 1.18fr .82fr;
-      gap:24px;
-    }
-
-    .panel{
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025)),
-        var(--panel);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(14px);
-      overflow:hidden;
-    }
-
-    .hero{
-      position:relative;
-      padding:26px 28px 22px;
-      min-height:188px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      isolation:isolate;
-    }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      right:-50px;
-      top:-50px;
-      width:240px;
-      aspect-ratio:1;
-      border-radius:50%;
-      background:
-        radial-gradient(circle at 50% 50%, rgba(243,231,206,.14), rgba(209,75,66,.06) 45%, transparent 65%);
-      filter:blur(8px);
-      z-index:-1;
-    }
-
-    .eyebrow{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      color:var(--gold);
-      font-size:.82rem;
-      letter-spacing:.22em;
-      text-transform:uppercase;
-      font-weight:700;
-    }
-
-    .eyebrow::before{
-      content:"";
-      width:32px;
-      height:1px;
-      background:linear-gradient(90deg, transparent, var(--gold));
-    }
-
-    h1,h2,h3{
-      font-family:"Bebas Neue", cursive;
-      margin:0;
-      line-height:.95;
-      letter-spacing:.03em;
-      font-weight:400;
-    }
-
-    h1{
-      font-size:clamp(3.6rem, 10vw, 7rem);
-      color:var(--cream);
-      text-wrap:balance;
-      margin-top:10px;
-    }
-
-    .subtitle{
-      max-width:66ch;
-      color:var(--muted);
-      font-size:1rem;
-      line-height:1.6;
-      margin-top:10px;
-    }
-
-    .left-col{
-      display:grid;
-      gap:24px;
-      align-content:start;
-    }
-
-    .section{
-      padding:24px;
-    }
-
-    .section-head{
-      display:flex;
-      align-items:end;
-      justify-content:space-between;
-      gap:20px;
-      margin-bottom:18px;
-    }
-
-    .section-head h2{
-      font-size:2rem;
-      color:var(--cream);
-    }
-
-    .section-head p{
-      margin:0;
-      color:var(--muted);
-      font-size:.95rem;
-      max-width:46ch;
-    }
-
-    .setup-grid{
-      display:grid;
-      grid-template-columns:1.05fr .95fr;
-      gap:20px;
-      align-items:start;
-    }
-
-    .field{
-      display:grid;
-      gap:8px;
-      margin-bottom:16px;
-    }
-
-    .field label{
-      font-size:.84rem;
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      color:var(--gold);
-      font-weight:700;
-    }
-
-    textarea, input, select{
-      width:100%;
-      border:none;
-      outline:none;
-      border-radius:16px;
-      padding:16px 16px;
-      font:inherit;
-      color:var(--text);
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.08);
-      transition:.22s ease;
-    }
-
-    textarea{
-      min-height:150px;
-      resize:vertical;
-      line-height:1.55;
-    }
-
-    textarea:focus, input:focus, select:focus{
-      border-color:rgba(221,183,104,.45);
-      box-shadow:0 0 0 4px rgba(221,183,104,.09);
-      transform:translateY(-1px);
-    }
-
-    .rules{
-      border-left:1px solid var(--line);
-      padding-left:20px;
-      display:grid;
-      gap:10px;
-    }
-
-    .rule{
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-      color:var(--muted);
-      line-height:1.55;
-      font-size:.96rem;
-    }
-
+    body{margin:0; color:var(--text); font-family:"Inter", sans-serif; background: radial-gradient(circle at 15% 20%, rgba(209,75,66,.12), transparent 28%), radial-gradient(circle at 85% 10%, rgba(221,183,104,.10), transparent 26%), linear-gradient(180deg, #17130f 0%, #111318 38%, #0c0e12 100%); min-height:100vh; overflow-x:hidden; }
+    body::before{content:""; position:fixed; inset:0; pointer-events:none; background: linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px); background-size:28px 28px; mask-image:linear-gradient(to bottom, rgba(0,0,0,.5), transparent 85%); opacity:.32; }
+    .app-shell{width:min(var(--max), calc(100% - 32px)); margin:24px auto 48px; display:grid; grid-template-columns: 1.18fr .82fr; gap:24px; }
+    .panel{background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.025)), var(--panel); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); backdrop-filter:blur(14px); overflow:hidden; }
+    .hero{position:relative; padding:26px 28px 22px; min-height:188px; display:flex; flex-direction:column; justify-content:space-between; isolation:isolate; }
+    .hero::after{content:""; position:absolute; right:-50px; top:-50px; width:240px; aspect-ratio:1; border-radius:50%; background: radial-gradient(circle at 50% 50%, rgba(243,231,206,.14), rgba(209,75,66,.06) 45%, transparent 65%); filter:blur(8px); z-index:-1; }
+    .eyebrow{display:inline-flex; align-items:center; gap:10px; color:var(--gold); font-size:.82rem; letter-spacing:.22em; text-transform:uppercase; font-weight:700; }
+    .eyebrow::before{content:""; width:32px; height:1px; background:linear-gradient(90deg, transparent, var(--gold)); }
+    h1,h2,h3{font-family:"Bebas Neue", cursive; margin:0; line-height:.95; letter-spacing:.03em; font-weight:400; }
+    h1{font-size:clamp(3.6rem, 10vw, 7rem); color:var(--cream); text-wrap:balance; margin-top:10px; }
+    .subtitle{max-width:66ch; color:var(--muted); font-size:1rem; line-height:1.6; margin-top:10px; }
+    .left-col{display:grid; gap:24px; align-content:start; }
+    .section{padding:24px; }
+    .section-head{display:flex; align-items:end; justify-content:space-between; gap:20px; margin-bottom:18px; }
+    .section-head h2{font-size:2rem; color:var(--cream); }
+    .section-head p{margin:0; color:var(--muted); font-size:.95rem; max-width:46ch; }
+    .setup-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:20px; align-items:start; }
+    .field{display:grid; gap:8px; margin-bottom:16px; }
+    .field label{font-size:.84rem; text-transform:uppercase; letter-spacing:.12em; color:var(--gold); font-weight:700; }
+    textarea, input, select{width:100%; border:none; outline:none; border-radius:16px; padding:16px 16px; font:inherit; color:var(--text); background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); transition:.22s ease; }
+    textarea{min-height:150px; resize:vertical; line-height:1.55; }
+    textarea:focus, input:focus, select:focus{border-color:rgba(221,183,104,.45); box-shadow:0 0 0 4px rgba(221,183,104,.09); transform:translateY(-1px); }
+    .rules{border-left:1px solid var(--line); padding-left:20px; display:grid; gap:10px; }
+    .rule{display:flex; gap:12px; align-items:flex-start; color:var(--muted); line-height:1.55; font-size:.96rem; }
     .rule strong{ color:var(--cream) }
-
-    .rule .n{
-      flex:0 0 auto;
-      width:28px;
-      height:28px;
-      border-radius:50%;
-      display:grid;
-      place-items:center;
-      color:#141414;
-      background:var(--gold);
-      font-weight:800;
-      font-size:.84rem;
-      margin-top:2px;
-    }
-
-    .play-grid{
-      display:grid;
-      grid-template-columns: 1.08fr .92fr;
-      gap:22px;
-      align-items:start;
-    }
-
-    .arena{
-      display:grid;
-      gap:18px;
-    }
-
-    .status-bar{
-      display:grid;
-      grid-template-columns:repeat(4, 1fr);
-      gap:12px;
-    }
-
-    .stat{
-      padding:14px 14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.06);
-    }
-
-    .stat .k{
-      color:var(--muted);
-      font-size:.78rem;
-      text-transform:uppercase;
-      letter-spacing:.11em;
-      font-weight:700;
-      margin-bottom:6px;
-    }
-
-    .stat .v{
-      color:var(--cream);
-      font-size:1.35rem;
-      font-weight:800;
-      line-height:1.1;
-    }
-
-    .modifiers{
-      display:grid;
-      grid-template-columns:repeat(5, 1fr);
-      gap:10px;
-    }
-
-    .num-grid{
-      display:grid;
-      grid-template-columns:repeat(7, 1fr);
-      gap:10px;
-    }
-
-    .btn{
-      appearance:none;
-      border:none;
-      cursor:pointer;
-      border-radius:16px;
-      padding:14px 12px;
-      min-height:58px;
-      font:inherit;
-      font-weight:800;
-      color:var(--cream);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      border:1px solid rgba(255,255,255,.08);
-      transition:transform .16s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease, opacity .22s ease;
-      position:relative;
-      overflow:hidden;
-    }
-
-    .btn:hover{
-      transform:translateY(-2px) scale(1.01);
-      box-shadow:0 14px 26px rgba(0,0,0,.22);
-      border-color:rgba(221,183,104,.22);
-    }
-
-    .btn:active{
-      transform:translateY(0) scale(.985);
-    }
-
-    .btn.active{
-      background:
-        linear-gradient(180deg, rgba(221,183,104,.26), rgba(221,183,104,.12));
-      border-color:rgba(221,183,104,.55);
-      color:#fff3d0;
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 10px 24px rgba(221,183,104,.12);
-    }
-
+    .rule .n{flex:0 0 auto; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; color:#141414; background:var(--gold); font-weight:800; font-size:.84rem; margin-top:2px; }
+    .play-grid{display:grid; grid-template-columns: 1.08fr .92fr; gap:22px; align-items:start; }
+    .arena{display:grid; gap:18px; }
+    .status-bar{display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; }
+    .stat{padding:14px 14px; border-radius:18px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06); }
+    .stat .k{color:var(--muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.11em; font-weight:700; margin-bottom:6px; }
+    .stat .v{color:var(--cream); font-size:1.35rem; font-weight:800; line-height:1.1; }
+    .modifiers{display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; }
+    .num-grid{display:grid; grid-template-columns:repeat(7, 1fr); gap:10px; }
+    .btn{appearance:none; border:none; cursor:pointer; border-radius:16px; padding:14px 12px; min-height:58px; font:inherit; font-weight:800; color:var(--cream); background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); border:1px solid rgba(255,255,255,.08); transition:transform .16s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease, opacity .22s ease; position:relative; overflow:hidden; }
+    .btn:hover{transform:translateY(-2px) scale(1.01); box-shadow:0 14px 26px rgba(0,0,0,.22); border-color:rgba(221,183,104,.22); }
+    .btn:active{transform:translateY(0) scale(.985); }
+    .btn.active{background: linear-gradient(180deg, rgba(221,183,104,.26), rgba(221,183,104,.12)); border-color:rgba(221,183,104,.55); color:#fff3d0; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 10px 24px rgba(221,183,104,.12); }
     .btn.red{ color:#ffd5cf; border-color:rgba(209,75,66,.28); background:linear-gradient(180deg, rgba(209,75,66,.16), rgba(209,75,66,.08)); }
     .btn.green{ color:#e5ffe0; border-color:rgba(132,192,122,.28); background:linear-gradient(180deg, rgba(132,192,122,.14), rgba(132,192,122,.08)); }
     .btn.gold{ color:#fff1ca; border-color:rgba(221,183,104,.34); background:linear-gradient(180deg, rgba(221,183,104,.18), rgba(221,183,104,.08)); }
-
-    .btn[disabled]{
-      opacity:.45;
-      cursor:not-allowed;
-      transform:none !important;
-      box-shadow:none !important;
-    }
-
-    .dart-log{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      min-height:58px;
-      padding:12px;
-      border-radius:18px;
-      background:rgba(255,255,255,.035);
-      border:1px dashed rgba(255,255,255,.12);
-    }
-
-    .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:10px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      color:var(--cream);
-      font-weight:700;
-      font-size:.92rem;
-    }
-
-    .chip small{
-      color:var(--muted);
-      font-weight:700;
-      letter-spacing:.05em;
-    }
-
-    .chip.bust{
-      background:rgba(209,75,66,.12);
-      border-color:rgba(209,75,66,.25);
-      color:#ffd8d1;
-    }
-
-    .chip.miss{
-      background:rgba(221,183,104,.10);
-      border-color:rgba(221,183,104,.22);
-      color:#ffecc3;
-    }
-
-    .chip.bounce{
-      background:rgba(132,192,122,.10);
-      border-color:rgba(132,192,122,.22);
-      color:#ddffd6;
-    }
-
-    .submit-bar{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      justify-content:space-between;
-      align-items:center;
-      padding-top:6px;
-    }
-
-    .note{
-      color:var(--muted);
-      font-size:.92rem;
-      line-height:1.5;
-    }
-
-    .primary{
-      padding:15px 20px;
-      border-radius:18px;
-      background:linear-gradient(180deg, var(--gold), #b98e42);
-      color:#17120d;
-      font-weight:900;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-      min-width:200px;
-      box-shadow:0 16px 36px rgba(185,142,66,.26);
-    }
-
-    .primary:hover{
-      box-shadow:0 20px 46px rgba(185,142,66,.34);
-      border-color:transparent;
-    }
-
-    .side{
-      display:grid;
-      gap:24px;
-      align-content:start;
-    }
-
-    .scoreboard-wrap{
-      padding:24px;
-    }
-
-    .scoreboard{
-      display:grid;
-      gap:12px;
-      margin-top:14px;
-    }
-
-    .player-row{
-      display:grid;
-      grid-template-columns: 44px 1.2fr .8fr .7fr .7fr;
-      gap:10px;
-      align-items:center;
-      padding:14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.035);
-      border:1px solid rgba(255,255,255,.07);
-      transition:.22s ease;
-    }
-
-    .player-row.active{
-      border-color:rgba(221,183,104,.38);
-      background:linear-gradient(180deg, rgba(221,183,104,.12), rgba(255,255,255,.04));
-      transform:translateY(-1px);
-    }
-
-    .player-row.out{
-      opacity:.6;
-      filter:saturate(.75);
-    }
-
-    .rank{
-      width:34px;
-      height:34px;
-      border-radius:50%;
-      display:grid;
-      place-items:center;
-      background:rgba(255,255,255,.08);
-      color:var(--cream);
-      font-weight:900;
-    }
-
-    .player-meta strong{
-      display:block;
-      color:var(--cream);
-      font-size:1rem;
-    }
-
-    .player-meta span{
-      color:var(--muted);
-      font-size:.82rem;
-    }
-
-    .score-pill{
-      display:inline-flex;
-      justify-content:center;
-      align-items:center;
-      min-height:42px;
-      padding:8px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.07);
-      color:var(--cream);
-      font-weight:800;
-    }
-
+    .btn[disabled]{opacity:.45; cursor:not-allowed; transform:none !important; box-shadow:none !important; }
+    .dart-log{display:flex; flex-wrap:wrap; gap:10px; min-height:58px; padding:12px; border-radius:18px; background:rgba(255,255,255,.035); border:1px dashed rgba(255,255,255,.12); }
+    .chip{display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius:999px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); color:var(--cream); font-weight:700; font-size:.92rem; }
+    .chip small{color:var(--muted); font-weight:700; letter-spacing:.05em; }
+    .chip.bust{background:rgba(209,75,66,.12); border-color:rgba(209,75,66,.25); color:#ffd8d1; }
+    .chip.miss{background:rgba(221,183,104,.10); border-color:rgba(221,183,104,.22); color:#ffecc3; }
+    .chip.bounce{background:rgba(132,192,122,.10); border-color:rgba(132,192,122,.22); color:#ddffd6; }
+    .submit-bar{display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:center; padding-top:6px; }
+    .note{color:var(--muted); font-size:.92rem; line-height:1.5; }
+    .primary{padding:15px 20px; border-radius:18px; background:linear-gradient(180deg, var(--gold), #b98e42); color:#17120d; font-weight:900; letter-spacing:.06em; text-transform:uppercase; min-width:200px; box-shadow:0 16px 36px rgba(185,142,66,.26); }
+    .primary:hover{box-shadow:0 20px 46px rgba(185,142,66,.34); border-color:transparent; }
+    .side{display:grid; gap:24px; align-content:start; }
+    .scoreboard-wrap{padding:24px; }
+    .scoreboard{display:grid; gap:12px; margin-top:14px; }
+    .player-row{display:grid; grid-template-columns: 44px 1.2fr .8fr .7fr .7fr; gap:10px; align-items:center; padding:14px; border-radius:18px; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07); transition:.22s ease; }
+    .player-row.active{border-color:rgba(221,183,104,.38); background:linear-gradient(180deg, rgba(221,183,104,.12), rgba(255,255,255,.04)); transform:translateY(-1px); }
+    .player-row.out{opacity:.6; filter:saturate(.75); }
+    .rank{width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.08); color:var(--cream); font-weight:900; }
+    .player-meta strong{display:block; color:var(--cream); font-size:1rem; }
+    .player-meta span{color:var(--muted); font-size:.82rem; }
+    .score-pill{display:inline-flex; justify-content:center; align-items:center; min-height:42px; padding:8px 12px; border-radius:999px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07); color:var(--cream); font-weight:800; }
     .score-pill.good{ border-color:rgba(132,192,122,.28); color:#e7ffdf; }
     .score-pill.bad{ border-color:rgba(209,75,66,.30); color:#ffd5cf; }
-
-    .legend{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:14px;
-    }
-
-    .small-panel{
-      padding:20px 24px 22px;
-    }
-
-    .small-panel h3{
-      font-size:1.7rem;
-      margin-bottom:10px;
-      color:var(--cream);
-    }
-
-    .small-panel p{
-      margin:0;
-      color:var(--muted);
-      line-height:1.6;
-    }
-
-    .winner-banner{
-      margin-top:14px;
-      padding:16px;
-      border-radius:18px;
-      background:linear-gradient(180deg, rgba(221,183,104,.18), rgba(221,183,104,.08));
-      border:1px solid rgba(221,183,104,.28);
-      color:#fff0c8;
-      font-weight:800;
-      display:none;
-    }
-
-    .reveal{
-      opacity:0;
-      transform:translateY(18px);
-      animation:rise .7s ease forwards;
-    }
+    .legend{display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+    .small-panel{padding:20px 24px 22px; }
+    .small-panel h3{font-size:1.7rem; margin-bottom:10px; color:var(--cream); }
+    .small-panel p{margin:0; color:var(--muted); line-height:1.6; }
+    .winner-banner{margin-top:14px; padding:16px; border-radius:18px; background:linear-gradient(180deg, rgba(221,183,104,.18), rgba(221,183,104,.08)); border:1px solid rgba(221,183,104,.28); color:#fff0c8; font-weight:800; display:none; }
+    .reveal{opacity:0; transform:translateY(18px); animation:rise .7s ease forwards; }
     .reveal:nth-child(2){animation-delay:.08s}
     .reveal:nth-child(3){animation-delay:.16s}
     .reveal:nth-child(4){animation-delay:.24s}
-
-    @keyframes rise{
-      to{opacity:1; transform:translateY(0)}
-    }
-
-    .fade-in{
-      opacity:0;
-      transform:translateY(22px);
-      transition:opacity .65s ease, transform .65s ease;
-    }
-    .fade-in.visible{
-      opacity:1;
-      transform:translateY(0);
-    }
-
-    @media (max-width: 1120px){
-      .app-shell,
-      .play-grid,
-      .setup-grid{
-        grid-template-columns:1fr;
-      }
-      .rules{
-        border-left:none;
-        border-top:1px solid var(--line);
-        padding-left:0;
-        padding-top:18px;
-      }
-    }
-
-    @media (max-width: 760px){
-      .app-shell{ width:min(100% - 18px, var(--max)); margin:10px auto 24px; gap:16px; }
-      .hero, .section, .scoreboard-wrap, .small-panel{ padding:18px; }
-      .status-bar{ grid-template-columns:repeat(2, 1fr); }
-      .modifiers{ grid-template-columns:repeat(2, 1fr); }
-      .num-grid{ grid-template-columns:repeat(4, 1fr); }
-      .player-row{
-        grid-template-columns: 38px 1fr 1fr;
-      }
-      .player-row > :nth-child(4),
-      .player-row > :nth-child(5){
-        grid-column: span 1;
-      }
-      .primary{ width:100%; min-width:0; }
-      .submit-bar{ align-items:stretch; }
-    }
+    @keyframes rise{to{opacity:1; transform:translateY(0)} }
+    .fade-in{opacity:0; transform:translateY(22px); transition:opacity .65s ease, transform .65s ease; }
+    .fade-in.visible{opacity:1; transform:translateY(0); }
+    @media (max-width: 1120px){.app-shell, .play-grid, .setup-grid{grid-template-columns:1fr; } .rules{border-left:none; border-top:1px solid var(--line); padding-left:0; padding-top:18px; } }
+    @media (max-width: 760px){.app-shell{ width:min(100% - 18px, var(--max)); margin:10px auto 24px; gap:16px; } .hero, .section, .scoreboard-wrap, .small-panel{ padding:18px; } .status-bar{ grid-template-columns:repeat(2, 1fr); } .modifiers{ grid-template-columns:repeat(2, 1fr); } .num-grid{ grid-template-columns:repeat(4, 1fr); } .player-row{grid-template-columns: 38px 1fr 1fr; } .player-row > :nth-child(4), .player-row > :nth-child(5){grid-column: span 1; } .primary{ width:100%; min-width:0; } .submit-bar{ align-items:stretch; } }
   </style>
 </head>
 <body>
@@ -602,8 +100,7 @@
           <div class="eyebrow">Pub Classic Scoring App</div>
           <h1>9 Dart Century</h1>
           <p class="subtitle">
-            Nine darts. Three turns. Hit exactly 100 or finish as close as possible without going over.
-            Miss outside the scoring area and your score resets to zero. Bounce-outs score nothing and do not penalize.
+            Nine darts. Three turns. Hit exactly 100 or finish as close as possible without going over. Miss outside the scoring area and your score resets to zero. Bounce-outs score nothing and do not penalize.
           </p>
         </div>
       </header>
@@ -615,14 +112,12 @@
           </div>
           <p>Enter one player per line. Choose the board type before starting.</p>
         </div>
-
         <div class="setup-grid">
           <div>
             <div class="field">
               <label for="playerNames">Player names</label>
               <textarea id="playerNames" placeholder="Alice&#10;Ben&#10;Chloe"></textarea>
             </div>
-
             <div class="field">
               <label for="boardType">Board type</label>
               <select id="boardType">
@@ -630,10 +125,13 @@
                 <option value="quad">Quad board</option>
               </select>
             </div>
-
+            <!-- Added Randomize Checkbox -->
+            <div class="field" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 4px; margin-bottom: 16px;">
+              <input type="checkbox" id="randomizePlayers" style="width: 20px; height: 20px; accent-color: var(--gold); cursor: pointer;" />
+              <label for="randomizePlayers" style="margin: 0; cursor: pointer; font-size: .84rem; text-transform: uppercase; letter-spacing: .12em; color: var(--gold); font-weight: 700;">Randomize player order</label>
+            </div>
             <button class="btn gold" id="startGameBtn" type="button">Start / Reset Match</button>
           </div>
-
           <div class="rules">
             <div class="rule"><span class="n">1</span><div><strong>Goal:</strong> Score exactly 100, or the nearest total below 100 after 9 darts.</div></div>
             <div class="rule"><span class="n">2</span><div><strong>Bust:</strong> Go over 100 and the player is out of the game.</div></div>
@@ -651,7 +149,6 @@
           </div>
           <p>Choose a multiplier, then tap a number. Current player does not advance until you press submit.</p>
         </div>
-
         <div class="play-grid">
           <div class="arena">
             <div class="status-bar">
@@ -672,7 +169,6 @@
                 <div class="v" id="boardLabel">Basic</div>
               </div>
             </div>
-
             <div>
               <div class="field">
                 <label>Modifier</label>
@@ -684,17 +180,14 @@
                   <button class="btn green" type="button" data-special="bounce">Bounce Out</button>
                 </div>
               </div>
-
               <div class="field">
                 <label>Hit selection</label>
                 <div class="num-grid" id="numberGrid"></div>
               </div>
-
               <div class="field">
                 <label>Darts thrown this turn log</label>
                 <div class="dart-log" id="dartLog" aria-live="polite"></div>
               </div>
-
               <div class="submit-bar">
                 <div class="note" id="turnNote">
                   Select up to nine darts for the current player. Press submit to lock the score and move on.
@@ -706,7 +199,6 @@
               </div>
             </div>
           </div>
-
           <aside class="side">
             <div class="panel scoreboard-wrap">
               <div class="section-head" style="margin-bottom:8px;">
@@ -716,12 +208,10 @@
               <div class="scoreboard" id="scoreboard"></div>
               <div class="winner-banner" id="winnerBanner"></div>
             </div>
-
             <div class="panel small-panel">
               <h3>Scoring Guide</h3>
               <p>
-                Bull counts as 25 on single and 50 on double. Triple bull and quad bull are disabled.
-                Miss means outside the scoring area and resets the player’s running total to zero.
+                Bull counts as 25 on single and 50 on double. Triple bull and quad bull are disabled. Miss means outside the scoring area and resets the player’s running total to zero.
               </p>
               <div class="legend">
                 <span class="chip"><small>Ex.</small> S20 = 20</span>
@@ -743,7 +233,6 @@
           <div><h2>Game State</h2></div>
           <p>Use this app as a clean scorer for pub matches and practice sessions.</p>
         </div>
-
         <div class="rules" style="border:none; padding:0;">
           <div class="rule"><span class="n">A</span><div><strong>Turns:</strong> Each player gets one 9-dart sequence in this app flow.</div></div>
           <div class="rule"><span class="n">B</span><div><strong>Undo:</strong> Removes the most recently entered dart before submit.</div></div>
@@ -755,8 +244,7 @@
       <section class="panel small-panel reveal fade-in">
         <h3>Board Feel</h3>
         <p>
-          Styled to evoke a classic dartboard palette: warm brass, dark timber, felt green, and chalkboard contrast.
-          Fast input, large tap targets, and a readable scoreboard make it practical on desktop or mobile beside the oche.
+          Styled to evoke a classic dartboard palette: warm brass, dark timber, felt green, and chalkboard contrast. Fast input, large tap targets, and a readable scoreboard make it practical on desktop or mobile beside the oche.
         </p>
       </section>
     </aside>
@@ -774,6 +262,7 @@
 
     const playerNamesEl = document.getElementById("playerNames");
     const boardTypeEl = document.getElementById("boardType");
+    const randomizePlayersEl = document.getElementById("randomizePlayers"); // Reference for checkbox
     const startGameBtn = document.getElementById("startGameBtn");
     const numberGrid = document.getElementById("numberGrid");
     const currentPlayerNameEl = document.getElementById("currentPlayerName");
@@ -800,7 +289,6 @@
         btn.addEventListener("click", () => addThrow("number", i));
         numberGrid.appendChild(btn);
       }
-
       const bullBtn = document.createElement("button");
       bullBtn.className = "btn gold";
       bullBtn.type = "button";
@@ -832,10 +320,18 @@
     }
 
     function startGame() {
-      const players = parsePlayers(playerNamesEl.value);
+      let players = parsePlayers(playerNamesEl.value);
       if (players.length === 0) {
         alert("Please enter at least one player name.");
         return;
+      }
+
+      // Randomize player order if checkbox is checked
+      if (randomizePlayersEl && randomizePlayersEl.checked) {
+        for (let i = players.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [players[i], players[j]] = [players[j], players[i]];
+        }
       }
 
       state.players = players;
@@ -844,7 +340,7 @@
       state.currentModifier = "single";
       state.gameStarted = true;
       state.gameFinished = false;
-
+      
       applyModifierUI();
       updateBoardUI();
       updateCurrentPlayerUI();
@@ -926,7 +422,6 @@
           missTriggered = true;
           continue;
         }
-
         score += dart.points;
         if (score > 100) {
           busted = true;
@@ -934,7 +429,7 @@
         }
       }
 
-      player.score = busted ? score : score;
+      player.score = score;
       player.busted = busted;
       player.resetByMiss = missTriggered;
     }
@@ -994,10 +489,9 @@
       const finalWinners = exact.length ? exact : winners;
 
       winnerBannerEl.style.display = "block";
-      winnerBannerEl.textContent =
-        finalWinners.length === 1
-          ? `Winner: ${finalWinners[0].name} with ${finalWinners[0].score}`
-          : `Tie: ${finalWinners.map(w => w.name).join(", ")} with ${finalWinners[0].score}`;
+      winnerBannerEl.textContent = finalWinners.length === 1 
+        ? `Winner: ${finalWinners[0].name} with ${finalWinners[0].score}` 
+        : `Tie: ${finalWinners.map(w => w.name).join(", ")} with ${finalWinners[0].score}`;
     }
 
     function hideWinner() {
@@ -1053,12 +547,10 @@
     function renderDartLog() {
       dartLogEl.innerHTML = "";
       const player = currentPlayer();
-
       if (!state.gameStarted || !player) {
         dartLogEl.innerHTML = `<span class="note">Start a match to begin entering darts.</span>`;
         return;
       }
-
       if (player.darts.length === 0) {
         dartLogEl.innerHTML = `<span class="note">No darts entered yet for ${escapeHtml(player.name)}.</span>`;
         return;
@@ -1070,7 +562,6 @@
         if (dart.type === "miss") chip.classList.add("miss");
         if (dart.type === "bounce") chip.classList.add("bounce");
         if (player.busted && idx === player.darts.length - 1) chip.classList.add("bust");
-
         chip.innerHTML = `<small>#${idx + 1}</small> ${dart.label} <small>${dart.points} pts</small>`;
         dartLogEl.appendChild(chip);
       });
@@ -1147,11 +638,11 @@
 
     function escapeHtml(str) {
       return str.replace(/[&<>"']/g, m => ({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#39;"
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
       })[m]);
     }
 
@@ -1164,7 +655,6 @@
         addThrow("bounce", 0);
         return;
       }
-
       if (btn.dataset.mod) {
         if (btn.dataset.mod === "quad" && state.boardType !== "quad") return;
         state.currentModifier = btn.dataset.mod;
